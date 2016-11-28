@@ -1,0 +1,113 @@
+https://docs.asp.net/en/latest/mvc/index.html
+
+http://www.07net01.com/2016/09/1658316.html
+ASP.NET Core 中文文档 第四章 MVC（3.3）布局视图
+
+视图(View)经常共享视觉元素和编程元素。在本篇文章中，你将学习如何在你的 ASP.NET 应用程序中使用通用布局视图、共享指令以及在渲染视图前运行通用代码。
+
+章节：
+
+什么是布局视图
+指定布局
+导入共享指令
+在视图之前运行代码
+什么是布局视图
+大部分 Web 应用程序在用户切换页面时，使用通用布局提供了一致的用户体验。通用布局通常包含页眉、导航栏（或菜单）以及页脚等通用 UI 元素。
+
+
+
+在一个应用程序中，诸如脚本(scripts)和样式表(stylesheets)这样的通用 HTML 结构也频繁的被许多页面使用。所有的这些共享元素可以在 layout 文件中定义，这样应用程序中的任何视图都可以使用它们。布局视图减少了视图中的重复代码，帮助我们遵循 Don't Repeat Yourself (DRY) 原则。
+
+按照惯例，ASP.NET 应用程序的默认布局文件命名为 _Layout.cshtml。Visual Studio ASP.NET Core MVC 项目模板包含这个布局文件，位置在 Views/Shared 文件夹：
+
+
+
+这个布局为应用程序中的视图定义了一个顶层模版。布局对应用程序来说不是必须的，应用程序也可以定义多个模板供不同的视图使用。
+
+指定布局
+Razor 视图拥有一个 Layout 属性。各个视图可以通过设置这个属性来指定布局：
+
+@{
+    Layout = "_Layout";
+}
+指定布局时可以用完整路径（例如： /Views/Shared/_Layout.cshtml ）或者部分名称（例如： _Layout ）。当使用部分名称时，Razor 视图引擎将使用它的标准发现流程搜索布局文件。首先 Controller 相关的文件夹，其次是 Shared 文件夹。这个发现流程和部分视图的是完全相同的。
+
+默认情况下，每个布局视图必须调用 RenderBody 方法。在哪里调用 RenderBody ，视图内容就会在那里被渲染。
+
+Sections
+
+布局视图可以通过调用 RenderSection 方法来引用一个或多个 sections （布局视图不是必须引用 Section）。Section 提供了组织某些页面元素放置的方法。每一个 RenderSection 调用都可以指定 Secton 是必须还是可选的。如果找不到一个必须的 Section，会抛出异常。个别视图使用 @section 指定被渲染的内容。如果一个视图定义了一个 Section，它必须被渲染（否则将会发生错误）。（译者注：这里的必须被渲染指必须通过 RenderSection 方法调用。）
+
+一个在视图中定义 @section 的例子：
+
+@section Scripts {
+  <script type="text/Javascript" src=http://www.cnblogs.com/dotNETCoreSG/p/"/scripts/main.js"></script>
+}
+在上面的代码中，将验证脚本添加到一个包含 Form 表单的视图中的 scripts Section 中。其它在同一个应用程序的视图也许不需要任何额外的脚本，所以不需要定义 scripts Section。
+
+定义在视图中的 Section 只在其相关的布局页中可用。它们不能在局部视图、视图组件或视图系统的其他部分中引用。（译者注：Section 可以在任何视图系统中定义，但只能在布局视图中调用 RenderSection 进行渲染。）
+
+忽略 Section
+
+默认情况下，内容页中 Body 和所有 Section 都必须在布局页中渲染。Razor 视图引擎通过跟踪 Body 和每个 Section 是否被渲染来强制执行。
+
+如果需要指示视图引擎忽略 Body 和 Section，调用 IgnoreBody 和 IgnoreSection 方法。
+
+在 Razor 页面的 Body 和每个 Section 必须被渲染或忽略。
+
+
+导入共享指令
+视图可以使用 Razor 指令做许多事，比如导入命名空间或者进行依赖注入。由多个视图共享的指令可以在公共的 _ViewImports.cshtml 文件中指定。 _ViewImports 文件支持以下指令：
+
+@addTagHelper
+@removeTagHelper
+@tagHelperPrefix
+@using
+@model
+@inherits
+@inject
+这个文件不支持其他 Razor 特性，比如 functions 和 section 的定义等等。
+
+一个 _ViewImports.cshtml 文件的例子：
+
+@using WebApplication1
+@using WebApplication1.Models
+@using WebApplication1.Models.AccountViewModels
+@using WebApplication1.Models.ManageViewModels
+@using Microsoft.AspNetCore.Identity
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+在ASP.NET Core MVC 应用程序中， _ViewImports.cshtml 通常被放置在 Views 文件夹下。_ViewImports.cshtml 文件也可以放在任何文件夹下面，在这种情况下，它将只作用于该文件夹和其子文件夹下的视图。在执行顺序上，首先执行在根目录下的 _ViewImports 文件，然后执行视图所在文件夹下的 _ViewImports文件，所以在根目录中 _ViewImports 文件里指定的设定可能会被覆盖掉。
+
+举个例子，如果根目录中 _ViewImports.cshtml 文件指定了 @model 和 @addTagHelper，另外一个 Controller 相关文件夹下的 _ViewImports.cshtml 文件指定一个不同的 @model 并添加另外一个 @addTagHelper ，视图将可访问两种 TagHelper 并使用后者指定的 @model 。
+
+如果一个视图中有多个 _ViewImports.cshtml 文件被运行，多个 ViewImports.cshtml 文件中指令的组合行为如下：
+
+@addTagHelper, @removeTagHelper：按照顺序全部运行
+@tagHelperPrefix：离视图最近的一个覆盖其他的
+@model：离视图最近的一个覆盖其他的
+@inherits：离视图最近的一个覆盖其他的
+@using：全部包含; 重复的忽略
+@inject：对每一个属性而言（通过属性名区分），离视图最近的一个覆盖其他的
+
+
+
+在视图之前运行代码
+如果你有代码需要在每个视图之前运行，这些代码应该放在 _ViewStart.cshtml 文件中。按照约定， _ViewStart.cshtml 文件位于 Views 文件夹。 _ViewStart.cshtml 中列出的语句会在所有完整的视图（不包含布局视图和部分视图）之前运行。就像 ViewImports.cshtml ，_ViewStart.cshtml 也有优先级。如果一个 _ViewStart.cshtml 文件定义在 Controller 相关的视图文件夹内，它将比 Views 文件夹根目录下的 _ViewStart.cshtml 文件更晚运行（如果根目录下有这个文件的话）。
+
+一个 _ViewStart.cshtml 文件例子：
+
+@{
+    Layout = "_Layout";
+}
+上面的文件指定了所有的视图将使用 _Layout.cshtml 布局视图。
+
+注意
+通常无论 _ViewStart.cshtml 还是 _ViewImports.cshtml 都不能放在 /Views/Shared 文件夹下。应用程序级别的这些文件，应该直接放在 /Views 文件夹下。
+
+
+
+
+
+
+
+

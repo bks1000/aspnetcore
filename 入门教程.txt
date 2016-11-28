@@ -1,0 +1,55 @@
+http://www.cnblogs.com/liangxiaofeng/p/5795239.html
+http://www.cnblogs.com/xuanhun/p/5629589.html
+
+一些约定：
+appsettings.json : 用来添加 appsetting
+gulpfile.js      : 内置gulp
+project.json     : 项目配置文件，采用JSON格式
+Startup.cs       : 可以理解为入口点
+
+
+入门：
+打开VS Code，Ctrl+P 打开Quick Open，输入如下命令，安装C# for Visual Studio Code。
+ext install csharp
+
+新建文件夹:F:/HW/aspnetcore
+进入文件夹，在命令行分别执行如下命令：
+dotnet new -t web
+dotnet restore  //加载依赖
+dotnet build    //编译
+dotnet run      //运行
+现在在浏览器打开http://localhost:5000,可以看到默认生成的站点。
+在命令行“CTRL+C”，结束测试
+
+
+用VS Code打开文件夹
+这个时候会提醒，下载调试和编译工具，点击“Yes”。注意下面的状态栏信息
+下载和安装成功后展开调试功能。
+如果调试选项里显示没有匹配，在配置下拉中选择.NET Core。
+在调试器选择web项目。
+开始调试。
+如果运行出错：打开launch.json,修改program的路径，具体路径可以查看编译后的bin/debug文件夹里面的内容（项目名.dll）。
+启动调试，编译成功，会自动启动浏览器。
+
+
+
+但是我们看到的样式和从命令行看到的不同，原因在于调试模式和Product模式，使用的文件不一样，在_Layout文件中我们可以看到原因。
+开发模式下，引用的bootstrap文件在“wwwroot/lib/bootstrap”目录下，但是我们当前找不到这个目录。项目的JQuery和Bootstrap依赖是通过bower来安装的，这点我们可以从bower.json看到。
+看来是需要先安装bower了，通过如下命令进行安装：
+npm install -g bower
+如果连npm都没有，那就先安装node了，这里我就不再啰嗦下去了。nodejs
+bower 安装成功之后，(在aspnetcore[新建项目文件夹]下)执行
+bower install
+安装依赖项。
+再次启动调试。现在一切正常了。
+
+
+
+
+ASP.NET Core 十种方式扩展你的 Views：
+http://www.cnblogs.com/savorboard/p/aspnetcore-views.html
+
+
+*母版视图:
+在_ViewStart.cshtml中设置了全局Layout使用的视图名.
+
